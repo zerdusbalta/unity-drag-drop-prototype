@@ -4,16 +4,16 @@ using TMPro;
 public class DragObject : MonoBehaviour
 {
     private bool isDragging;
+    private bool isSnapping;
     private Vector3 offset;
     private Vector3 startPosition;
+    private Vector3 targetPosition;
+
+    [SerializeField] private float snapSpeed = 10f;
+    [SerializeField] private TextMeshProUGUI successText;
+
     private SpriteRenderer sr;
     private DropZone dropZone;
-
-    private bool isSnapping;
-    private Vector3 snapTarget;
-    public float snapSpeed = 8f;
-
-    [SerializeField] private TextMeshProUGUI successText;
 
     private void Start()
     {
@@ -31,14 +31,15 @@ public class DragObject : MonoBehaviour
     {
         if (isSnapping)
         {
-            transform.position = Vector3.Lerp(transform.position, snapTarget, snapSpeed * Time.deltaTime);
+            transform.position = Vector3.Lerp(transform.position, targetPosition, snapSpeed * Time.deltaTime);
 
-            if (Vector3.Distance(transform.position, snapTarget) < 0.01f)
+            if (Vector3.Distance(transform.position, targetPosition) < 0.01f)
             {
-                transform.position = snapTarget;
+                transform.position = targetPosition;
                 isSnapping = false;
             }
         }
+
         Vector3 mouseWorld = GetMouseWorldPosition();
 
         if (Input.GetMouseButtonDown(0))
@@ -71,8 +72,9 @@ public class DragObject : MonoBehaviour
 
             if (dropZone != null && dropZone.IsMoreThanHalfInside(GetComponent<Collider2D>()))
             {
-                snapTarget = dropZone.GetSnapPosition();
-                isSnapping = true; sr.color = Color.yellow;
+                targetPosition = dropZone.GetSnapPosition();
+                isSnapping = true;
+                sr.color = Color.yellow;
 
                 if (successText != null)
                 {
